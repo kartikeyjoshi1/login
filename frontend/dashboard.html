@@ -82,7 +82,8 @@
       window.location.href = 'smart-login.html';
     }
 
-    fetch('http://localhost:5000/api/auth/profile', {
+    fetch('https://kartikeylogin.onrender.com/api/auth/profile', {
+
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
