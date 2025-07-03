@@ -73,7 +73,8 @@
       const statusMsg = document.getElementById('statusMsg');
 
       try {
-        const res = await fetch('http://localhost:5000/api/auth/smart-login', {
+        const res = await fetch('https://kartikeylogin.onrender.com/api/auth/smart-login', {
+
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
