@@ -76,14 +76,14 @@
 
   <script>
     const token = localStorage.getItem('token');
+    const baseUrl = 'https://kartikeylogin.onrender.com';
 
     if (!token) {
       alert('❌ Not logged in');
       window.location.href = 'smart-login.html';
     }
 
-    fetch('https://kartikeylogin.onrender.com/api/auth/profile', {
-
+    fetch(`${baseUrl}/api/auth/profile`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -98,8 +98,7 @@
           <p><strong>Username:</strong> ${data.username}</p>
         `;
 
-        // Try to load profile photo
-        const photoUrl = `http://localhost:5000/uploads/${data.userId}.jpg`;
+        const photoUrl = `${baseUrl}/uploads/${data.userId}.jpg`;
         const img = document.getElementById('profilePhoto');
         img.src = photoUrl;
         img.onload = () => (img.style.display = 'block');
@@ -118,7 +117,7 @@
       e.preventDefault();
       const formData = new FormData(e.target);
 
-      const res = await fetch('http://localhost:5000/api/auth/upload-photo', {
+      const res = await fetch(`${baseUrl}/api/auth/upload-photo`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -131,7 +130,7 @@
 
       if (res.ok) {
         statusText.innerText = '✅ Photo uploaded!';
-        document.getElementById('profilePhoto').src = `http://localhost:5000/uploads/${result.file}`;
+        document.getElementById('profilePhoto').src = `${baseUrl}/uploads/${result.file}`;
         document.getElementById('profilePhoto').style.display = 'block';
       } else {
         statusText.innerText = '❌ ' + (result.message || 'Upload failed');
