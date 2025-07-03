@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef2f3;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 400px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h2 {
+      color: #333;
+    }
+    p {
+      margin: 10px 0;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #d73833;
+    }
+    input[type="file"] {
+      margin-top: 20px;
+    }
+    #profilePhoto {
+      margin-top: 15px;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 50%;
+      display: none;
+    }
+    #uploadStatus {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>👋 Welcome</h2>
+    <div id="info">Loading your profile...</div>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="photo" accept="image/*" required />
+      <br>
+      <button type="submit">Upload Photo</button>
+    </form>
+
+    <img id="profilePhoto" alt="Profile Photo" />
+    <p id="uploadStatus"></p>
+
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('❌ Not logged in');
+      window.location.href = 'smart-login.html';
+    }
+
+    fetch('http://localhost:5000/api/auth/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.userId) {
+        document.getElementById('info').innerHTML = `
+          <p><strong>User ID:</strong> ${data.userId}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Username:</strong> ${data.username}</p>
+        `;
+
+        // Try to load profile photo
+        const photoUrl = `http://localhost:5000/uploads/${data.userId}.jpg`;
+        const img = document.getElementById('profilePhoto');
+        img.src = photoUrl;
+        img.onload = () => (img.style.display = 'block');
+        img.onerror = () => (img.style.display = 'none');
+      } else {
+        throw new Error('Not authorized');
+      }
+    })
+    .catch(err => {
+      alert('❌ Please login again');
+      localStorage.removeItem('token');
+      window.location.href = 'smart-login.html';
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      const res = await fetch('http://localhost:5000/api/auth/upload-photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      const result = await res.json();
+      const statusText = document.getElementById('uploadStatus');
+
+      if (res.ok) {
+        statusText.innerText = '✅ Photo uploaded!';
+        document.getElementById('profilePhoto').src = `http://localhost:5000/uploads/${result.file}`;
+        document.getElementById('profilePhoto').style.display = 'block';
+      } else {
+        statusText.innerText = '❌ ' + (result.message || 'Upload failed');
+      }
+    });
+
+    function logout() {
+      localStorage.removeItem('token');
+      alert("✅ Logged out");
+      window.location.href = 'smart-login.html';
+    }
+  </script>
+</body>
+</html>
